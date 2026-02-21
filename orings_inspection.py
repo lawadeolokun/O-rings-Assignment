@@ -3,18 +3,107 @@ import numpy as np
 import time
 
 
+def to_grayscale(img):
+    height, width, channels = img.shape
+    gray = np.zeros((height, width), dtype=np.uint8)
+
+    for i in range(height):
+        for j in range(width):
+            b = img[i, j, 0]
+            g = img[i, j, 1]
+            r = img[i, j, 2]
+
+            gray_value = int(0.114*b + 0.587*g + 0.299*r)
+            gray[i, j] = gray_value
+
+    return gray
+
+
+def compute_histogram(gray_img):
+    histogram = np.zeros(256)
+
+    height, width = gray_img.shape
+
+    for i in range(height):
+        for j in range(width):
+            intensity = gray_img[i, j]
+            histogram[intensity] += 1
+
+    return histogram
+
+# here otsu calculates the threshold 
+def otsu_threshold(histogram, total_pixels):
+
+    sum_total = 0
+    for i in range(256):
+        sum_total += i * histogram[i]
+
+    sum_background = 0
+    weight_background = 0
+    max_variance = 0
+    threshold = 0
+
+    for t in range(256):
+        weight_background += histogram[t]
+        if weight_background == 0:
+            continue
+
+        weight_foreground = total_pixels - weight_background
+        if weight_foreground == 0:
+            break
+
+        sum_background += t * histogram[t]
+
+        mean_background = sum_background / weight_background
+        mean_foreground = (sum_total - sum_background) / weight_foreground
+
+        variance = weight_background * weight_foreground * (mean_background - mean_foreground) ** 2
+
+        if variance > max_variance:
+            max_variance = variance
+            threshold = t
+
+    return threshold
+
+def apply_threshold(gray_img, threshold):
+    height, width = gray_img.shape
+    binary = np.zeros((height, width), dtype=np.uint8)
+
+    for i in range(height):
+        for j in range(width):
+            if gray_img[i, j] > threshold:
+                binary[i, j] = 255
+            else:
+                binary[i, j] = 0
+
+    return binary
+
 if __name__ == "__main__":
 
-    # load image with open cv
-    image = cv2.imread("Oring15.jpg")
+    # load image with open cv 
+    image = cv2.imread("Oring13.jpg")
 
     if image is None:
         print("Error: Image not found.")
         exit()
 
+    gray_image = to_grayscale(image)
 
-    # Display images
-    cv2.imshow("Original Image", image)
-   
+    histogram = compute_histogram(gray_image)
+
+    total_pixels = gray_image.shape[0] * gray_image.shape[1]
+
+    threshold = otsu_threshold(histogram, total_pixels)
+
+    print("Histogram computed.")
+    print("Total pixels:", total_pixels)
+
+    print("Otsu Threshold:", threshold)
+    binary_image = apply_threshold(gray_image, threshold)
+
+    cv2.imshow("Binary Image", binary_image)
+
+    cv2.imshow("O-ring Image", gray_image)
+
     cv2.waitKey(0)
     cv2.destroyAllWindows()
