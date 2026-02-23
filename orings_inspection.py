@@ -71,12 +71,61 @@ def apply_threshold(gray_img, threshold):
 
     for i in range(height):
         for j in range(width):
-            if gray_img[i, j] > threshold:
+            if gray_img[i, j] < threshold:
                 binary[i, j] = 255
             else:
                 binary[i, j] = 0
 
     return binary
+
+# dillation to check neighbours to fill in the small holes
+def dilation(binary_img):
+    height, width = binary_img.shape
+    output = np.zeros((height, width), dtype=np.uint8)
+
+    for i in range(1, height-1):
+        for j in range(1, width-1):
+
+            white_found = False
+
+            for x in range(-1, 2):
+                for y in range(-1, 2):
+                    if binary_img[i + x, j + y] == 255:
+                        white_found = True
+
+            if white_found:
+                output[i, j] = 255
+            else:
+                output[i, j] = 0
+
+    return output
+
+# errosion of boundaries
+def erosion(binary_img):
+    height, width = binary_img.shape
+    output = np.zeros((height, width), dtype=np.uint8)
+
+    for i in range(1, height-1):
+        for j in range(1, width-1):
+
+            all_white = True
+
+            for x in range(-1, 2):
+                for y in range(-1, 2):
+                    if binary_img[i + x, j + y] == 0:
+                        all_white = False
+
+            if all_white:
+                output[i, j] = 255
+            else:
+                output[i, j] = 0
+
+    return output
+
+def closing(binary_img):
+    dilated = dilation(binary_img)
+    closed = erosion(dilated)
+    return closed
 
 if __name__ == "__main__":
 
@@ -95,11 +144,14 @@ if __name__ == "__main__":
 
     threshold = otsu_threshold(histogram, total_pixels)
 
-    print("Histogram computed.")
     print("Total pixels:", total_pixels)
 
     print("Otsu Threshold:", threshold)
     binary_image = apply_threshold(gray_image, threshold)
+
+    closed_image = closing(binary_image)
+
+    cv2.imshow("Closed Image", closed_image)
 
     cv2.imshow("Binary Image", binary_image)
 
