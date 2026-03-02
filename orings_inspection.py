@@ -173,7 +173,7 @@ def connected_components(binary_img):
 if __name__ == "__main__":
 
     # load image with open cv 
-    image = cv2.imread("Oring13.jpg")
+    image = cv2.imread("Oring9.jpg")
 
     if image is None:
         print("Error: Image not found.")
@@ -201,6 +201,21 @@ if __name__ == "__main__":
 
     region_sizes = dict(zip(unique_labels, counts))
     region_sizes.pop(0, None) 
+
+    significant_components = 0
+
+    # use size 500 to allow small errors
+    for size in region_sizes.values():
+        if size > 500: 
+            significant_components += 1
+
+    if significant_components > 1:
+        result = "FAIL"
+    else:
+        result = "PASS"
+
+    print("Significant Components:", significant_components)
+    print("Final Result:", result)
 
     cv2.imshow("Closed Image", closed_image)
 
