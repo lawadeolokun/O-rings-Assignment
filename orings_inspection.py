@@ -31,7 +31,7 @@ def compute_histogram(gray_img):
 
     return histogram
 
-# here otsu calculates the threshold 
+# here otsu calculates the threshold
 def otsu_threshold(histogram, total_pixels):
 
     sum_total = 0
@@ -78,7 +78,7 @@ def apply_threshold(gray_img, threshold):
 
     return binary
 
-# dillation to check neighbours to fill in the small holes
+# dilation to check neighbours to fill in the small holes
 def dilation(binary_img):
     height, width = binary_img.shape
     output = np.zeros((height, width), dtype=np.uint8)
@@ -127,6 +127,49 @@ def closing(binary_img):
     closed = erosion(dilated)
     return closed
 
+#connected component labeling
+def connected_components(binary_img):
+
+    height, width = binary_img.shape
+    labels = np.zeros((height, width), dtype=int)
+
+    label = 1
+    equivalences = {}
+
+    for i in range(1, height):
+        for j in range(1, width):
+
+            if binary_img[i, j] == 255:
+
+                top = labels[i-1, j]
+                left = labels[i, j-1]
+
+                if top == 0 and left == 0:
+                    labels[i, j] = label
+                    equivalences[label] = label
+                    label += 1
+
+                elif top != 0 and left == 0:
+                    labels[i, j] = top
+
+                elif top == 0 and left != 0:
+                    labels[i, j] = left
+
+                else:
+                    min_label = min(top, left)
+                    labels[i, j] = min_label
+
+                    if top != left:
+                        equivalences[max(top, left)] = min_label
+
+    for i in range(height):
+        for j in range(width):
+            if labels[i, j] != 0:
+                while equivalences[labels[i, j]] != labels[i, j]:
+                    labels[i, j] = equivalences[labels[i, j]]
+
+    return labels
+
 if __name__ == "__main__":
 
     # load image with open cv 
@@ -150,6 +193,14 @@ if __name__ == "__main__":
     binary_image = apply_threshold(gray_image, threshold)
 
     closed_image = closing(binary_image)
+
+    labels = connected_components(closed_image)
+
+    # Count connected components
+    unique_labels, counts = np.unique(labels, return_counts=True)
+
+    region_sizes = dict(zip(unique_labels, counts))
+    region_sizes.pop(0, None) 
 
     cv2.imshow("Closed Image", closed_image)
 
