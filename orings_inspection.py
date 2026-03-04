@@ -173,11 +173,13 @@ def connected_components(binary_img):
 if __name__ == "__main__":
 
     # load image with open cv 
-    image = cv2.imread("Oring9.jpg")
+    image = cv2.imread("Oring5.jpg")
 
     if image is None:
         print("Error: Image not found.")
         exit()
+
+    start_time = time.time()
 
     gray_image = to_grayscale(image)
 
@@ -214,14 +216,33 @@ if __name__ == "__main__":
     else:
         result = "PASS"
 
+    end_time = time.time()
+    processing_time = end_time - start_time
+
     print("Significant Components:", significant_components)
     print("Final Result:", result)
+    print("Processing Time:", processing_time)
+
+    # Result colour
+    if result == "PASS":
+        color = (0, 255, 0)
+    else:
+        color = (0, 0, 255)
+
+    cv2.putText(image, f"Result: {result}", (10, 30),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.8, color, 2)
+
+    cv2.putText(image, f"Time: {processing_time:.4f}s", (10, 60),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 0), 2)
+    
 
     cv2.imshow("Closed Image", closed_image)
 
     cv2.imshow("Binary Image", binary_image)
 
     cv2.imshow("O-ring Image", gray_image)
+
+    cv2.imshow("Final Inspection", image)
 
     cv2.waitKey(0)
     cv2.destroyAllWindows()
