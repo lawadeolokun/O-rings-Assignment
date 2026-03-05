@@ -31,8 +31,8 @@ def compute_histogram(gray_img):
 
     return histogram
 
-# here otsu calculates the threshold
-def otsu_threshold(histogram, total_pixels):
+# here calculates the threshold
+def main_threshold(histogram, total_pixels):
 
     sum_total = 0
     for i in range(256):
@@ -187,11 +187,11 @@ if __name__ == "__main__":
 
     total_pixels = gray_image.shape[0] * gray_image.shape[1]
 
-    threshold = otsu_threshold(histogram, total_pixels)
+    threshold = main_threshold(histogram, total_pixels)
 
     print("Total pixels:", total_pixels)
 
-    print("Otsu Threshold:", threshold)
+    print("Threshold:", threshold)
     binary_image = apply_threshold(gray_image, threshold)
 
     closed_image = closing(binary_image)
@@ -236,11 +236,11 @@ if __name__ == "__main__":
                 cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 0), 2)
     
 
-    cv2.imshow("Closed Image", closed_image)
+   # cv2.imshow("Closed Image", closed_image)
 
-    cv2.imshow("Binary Image", binary_image)
+   # cv2.imshow("Binary Image", binary_image)
 
-    cv2.imshow("O-ring Image", gray_image)
+   # cv2.imshow("O-ring Image", gray_image)
 
     cv2.imshow("Final Inspection", image)
 
